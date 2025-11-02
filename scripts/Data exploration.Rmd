@@ -1,0 +1,156 @@
+```{r}
+# For paths
+library(here)
+
+# Read data
+library(readr)
+
+# For plots
+library(ggplot2)
+
+# For data manipulation
+library(dplyr)
+
+# 1000 Genomes Project
+if (!("kgp" %in% installed.packages())) {
+  install.packages("kgp")
+}
+library(kgp)
+
+# For randomness
+set.seed(12345)
+```
+
+```{r}
+# Instantiate constant variables
+plot_folder <- 'plots'
+data_dir <- 'datasets'
+tcga_met_name <- 'TCGA_metadata'
+tcga_pat_name <- 'TCGA_patientdata'
+```
+
+```{r}
+# Read metadata files
+tcga_metadata <- read_tsv(here(data_dir, paste0(tcga_met_name,'.tsv')))
+tcga_patient_data <- read_tsv(here(data_dir, paste0(tcga_pat_name,'.tsv')))
+
+# Combine the two datasets
+combined_tcga_data <- left_join(tcga_metadata, tcga_patient_data, by="PATIENT_ID")
+
+tcga_metadata
+tcga_patient_data
+combined_tcga_data
+
+# 1000 Genomes project
+data(kgp)
+```
+
+```{r}
+# Preprocessing dataframe to remove null
+clean_df <- function(df, vars) {
+  df %>% filter(!if_any(all_of(vars), is.na))
+}
+
+# Histogram with density
+plot_histogram <- function(df, var, proj_name, bins = 30, fill_color = "blue") {
+  df_clean <- clean_df(df, var)
+
+  hist <- ggplot(df_clean, aes(x = .data[[var]])) +
+    geom_histogram(aes(y = ..density..), bins = bins,
+                   alpha = 0.6, fill = fill_color, color = "navy") +
+    geom_density(linewidth = 1) +
+    labs(title = paste("Histogram of", var),
+         x = var, y = "Density") +
+    theme_minimal()+
+    theme(plot.title = element_text(hjust = 0.5))
+
+  print(hist)
+  ggsave(filename = paste0("Histogram_", var, "_", proj_name, ".png"), plot = hist,path = here(plot_folder),width = 8, height = 6)
+}
+
+# Pie chart
+plot_pie <- function(df, var, proj_name) {
+  df_clean <- clean_df(df, var)
+  df_count <- df_clean %>% count(.data[[var]])
+  n_cat <- nrow(df_count)
+  size <- max(6, n_cat)
+
+  pie <- ggplot(df_count, aes(x = "", y = n, fill = .data[[var]])) +
+    geom_col(width = 1) +
+    coord_polar(theta = "y") +
+    labs(title = paste("Pie Chart of", var), fill = var) +
+    theme_void()+
+    theme(plot.title = element_text(hjust = 0.5))
+
+  print(pie)
+  ggsave(filename = paste0("Pie_", var, "_", proj_name, ".png"), plot = pie,path = here(plot_folder),width = size, height = size)
+}
+
+# Boxplot
+plot_boxplot <- function(df, numeric_var, group_var, proj_name, fill_color = "darkgreen") {
+  df_clean <- clean_df(df, c(numeric_var, group_var))
+  n_groups <- n_distinct(df_clean[[group_var]])
+
+  width <- max(6, n_groups)
+  height <- 6
+
+  box_plot <- ggplot(df_clean, aes(x = .data[[group_var]], y = .data[[numeric_var]])) +
+    geom_boxplot(fill = fill_color) +
+    labs(title = paste(numeric_var, "by", group_var), x = group_var, y = numeric_var) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(hjust = 0.5))
+
+  print(box_plot)
+  ggsave(filename = paste0("Boxplot_", numeric_var, "_", group_var , "_", proj_name, ".png"), plot = box_plot, path = here(plot_folder), width = width, height = height)
+}
+
+# Bar plot
+plot_bar <- function(df, var, proj_name) {
+  df_clean <- clean_df(df, var)
+  n_cat <- n_distinct(df_clean[[var]])
+
+  width <- max(8, n_cat)
+  height <- 6
+
+  bar <- ggplot(df_clean, aes(x = .data[[var]], fill = .data[[var]])) +
+    geom_bar() +
+    labs(title = paste("Bar Plot of", var), x = var, y = "Count") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+  print(bar)
+  ggsave(filename = paste0("Barplot_", var, "_", proj_name ,".png"), plot = bar, path = here(plot_folder), width = width, height = height)
+}
+
+```
+
+```{r}
+# Set the project name so that outputs will have this name appended
+proj_name <- "TCGA"
+# For the TCGA dataset
+plot_histogram(combined_tcga_data, "AGE", proj_name)
+plot_boxplot(combined_tcga_data, "AGE", "SEX", proj_name)
+plot_bar(combined_tcga_data, "CANCER_TYPE", proj_name)
+plot_pie(combined_tcga_data, "RACE", proj_name)
+plot_pie(combined_tcga_data, "ETHNICITY", proj_name)
+plot_pie(combined_tcga_data, "GENETIC_ANCESTRY_LABEL", proj_name)
+```
+```{r}
+# Set the project name so that outputs will have this name appended
+proj_name <- "1000_Genomes_Project"
+# The kgp3 data contains pedigree and population information for the 2,504 samples included in the Phase 3 release of the 1000 Genomes Project data.
+kgp3
+
+# The kgpe data contains pedigree and population information all 3,202 samples included in the expanded 1000 Genomes Project data, which includes 602 trios.
+kgpe
+
+# The kgpmeta contains population metadata for the 26 populations across five continental regions.
+kgpmeta
+
+plot_pie(kgpe, "sexf", proj_name)
+plot_pie(kgpe, "region", proj_name)
+plot_bar(kgpe, "pop", proj_name)
+plot_pie(kgpe, "reg", proj_name)
+plot_bar(kgpe, "population", proj_name)
+```
+
