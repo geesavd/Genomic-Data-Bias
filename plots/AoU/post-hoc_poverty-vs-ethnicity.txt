@@ -1,0 +1,28 @@
+--- Post-Hoc Test Results (Dunn's Test with Bonferroni Correction) ---
+                           Hispanic or Latino  No matching concept  \
+Hispanic or Latino               1.000000e+00             0.062289   
+No matching concept              6.228857e-02             1.000000   
+None Of These                   6.633842e-103             1.000000   
+Not Hispanic or Latino           0.000000e+00             1.000000   
+PMI: Prefer Not To Answer        4.976282e-10             0.232025   
+PMI: Skip                       4.855957e-177             1.000000   
+
+                           None Of These  Not Hispanic or Latino  \
+Hispanic or Latino         6.633842e-103            0.000000e+00   
+No matching concept         1.000000e+00            1.000000e+00   
+None Of These               1.000000e+00            1.556938e-24   
+Not Hispanic or Latino      1.556938e-24            1.000000e+00   
+PMI: Prefer Not To Answer   3.577800e-13            1.544774e-63   
+PMI: Skip                   1.100206e-03            1.192920e-06   
+
+                           PMI: Prefer Not To Answer      PMI: Skip  
+Hispanic or Latino                      4.976282e-10  4.855957e-177  
+No matching concept                     2.320245e-01   1.000000e+00  
+None Of These                           3.577800e-13   1.100206e-03  
+Not Hispanic or Latino                  1.544774e-63   1.192920e-06  
+PMI: Prefer Not To Answer               1.000000e+00   3.976227e-27  
+PMI: Skip                               3.976227e-27   1.000000e+00  
+
+--- How to Read This Table ---
+This table shows the p-value for the difference between each pair of groups.
+Any value in this table LESS THAN 0.05 is a *statistically significant* difference.
