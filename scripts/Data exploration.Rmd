@@ -52,13 +52,13 @@ clean_df <- function(df, vars) {
 }
 
 # Histogram with density
-plot_histogram <- function(df, var, proj_name, bins = 30, fill_color = "blue") {
+plot_histogram <- function(df, var, proj_name, bins = 30, fill_color = "#a5b8d7") {
   df_clean <- clean_df(df, var)
 
   hist <- ggplot(df_clean, aes(x = .data[[var]])) +
     geom_histogram(aes(y = ..density..), bins = bins,
-                   alpha = 0.6, fill = fill_color, color = "navy") +
-    geom_density(linewidth = 1) +
+                   alpha = 0.6, fill = fill_color, color = "#6c8abe") +
+    geom_density(linewidth = 1, colour="#6c8abe") +
     labs(title = paste("Histogram of", var),
          x = var, y = "Density") +
     theme_minimal()+
@@ -70,6 +70,12 @@ plot_histogram <- function(df, var, proj_name, bins = 30, fill_color = "blue") {
 
 # Pie chart
 plot_pie <- function(df, var, proj_name) {
+  
+  colors <- c(
+    '#4878d0', '#ee854a', '#6acc64', '#d65f5f', '#956cb4', '#8c613c', '#dc7dc0', '#797979', '#d5bb67', '#82c6e2'
+  )
+  
+  
   df_clean <- clean_df(df, var)
   df_count <- df_clean %>% count(.data[[var]])
   n_cat <- nrow(df_count)
@@ -78,6 +84,7 @@ plot_pie <- function(df, var, proj_name) {
   pie <- ggplot(df_count, aes(x = "", y = n, fill = .data[[var]])) +
     geom_col(width = 1) +
     coord_polar(theta = "y") +
+    scale_fill_manual(values = colors) +
     labs(title = paste("Pie Chart of", var), fill = var) +
     theme_void()+
     theme(plot.title = element_text(hjust = 0.5))
@@ -87,7 +94,7 @@ plot_pie <- function(df, var, proj_name) {
 }
 
 # Boxplot
-plot_boxplot <- function(df, numeric_var, group_var, proj_name, fill_color = "darkgreen") {
+plot_boxplot <- function(df, numeric_var, group_var, proj_name, fill_color = "#b25c5f") {
   df_clean <- clean_df(df, c(numeric_var, group_var))
   n_groups <- n_distinct(df_clean[[group_var]])
 
@@ -98,7 +105,7 @@ plot_boxplot <- function(df, numeric_var, group_var, proj_name, fill_color = "da
     geom_boxplot(fill = fill_color) +
     labs(title = paste(numeric_var, "by", group_var), x = group_var, y = numeric_var) +
     theme_minimal() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(hjust = 0.5))
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 14), plot.title = element_text(hjust = 0.5))
 
   print(box_plot)
   ggsave(filename = paste0("Boxplot_", numeric_var, "_", group_var , "_", proj_name, ".png"), plot = box_plot, path = here(plot_folder), width = width, height = height)
@@ -109,17 +116,18 @@ plot_bar <- function(df, var, proj_name) {
   df_clean <- clean_df(df, var)
   n_cat <- n_distinct(df_clean[[var]])
 
-  width <- max(8, n_cat)
+  width <- max(8, n_cat*2)
   height <- 6
+  print(width)
 
-  bar <- ggplot(df_clean, aes(x = .data[[var]], fill = .data[[var]])) +
-    geom_bar() +
+  bar <- ggplot(df_clean, aes(x = .data[[var]])) +
+    geom_bar(fill = "#a5b8d7") +
     labs(title = paste("Bar Plot of", var), x = var, y = "Count") +
     theme_minimal() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(hjust = 0.5), legend.position = "none")
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 14), plot.title = element_text(hjust = 0.5), legend.position = "none")
 
   print(bar)
-  ggsave(filename = paste0("Barplot_", var, "_", proj_name ,".png"), plot = bar, path = here(plot_folder), width = width, height = height)
+  ggsave(filename = paste0("Barplot_", var, "_", proj_name ,".png"), plot = bar, path = here(plot_folder), width = width, height = height, limitsize = FALSE)
 }
 
 ```
@@ -132,6 +140,7 @@ plot_histogram(combined_tcga_data, "AGE", proj_name)
 plot_boxplot(combined_tcga_data, "AGE", "SEX", proj_name)
 plot_bar(combined_tcga_data, "CANCER_TYPE", proj_name)
 plot_pie(combined_tcga_data, "RACE", proj_name)
+plot_pie(combined_tcga_data, "SEX", proj_name)
 plot_pie(combined_tcga_data, "ETHNICITY", proj_name)
 plot_pie(combined_tcga_data, "GENETIC_ANCESTRY_LABEL", proj_name)
 ```
